@@ -1,5 +1,6 @@
 package com.zenjob.challenge.entity;
 
+import com.zenjob.challenge.enums.ShiftStatusEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,6 +30,7 @@ public class Shift {
 
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "job_id")
     private Job job;
 
     private UUID talentId;
@@ -41,4 +43,6 @@ public class Shift {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    private ShiftStatusEnum shiftStatus;
 }
