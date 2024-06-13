@@ -47,7 +47,7 @@ public class JobController {
     }
 
     @PatchMapping(path = "/{jobId}")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelJob(@PathVariable("jobId") String jobIdString) {
         UUID jobId = UUIDValidator.validateUUID(jobIdString);
         try {
@@ -55,10 +55,12 @@ public class JobController {
             logger.info("Job with ID: {} canceled successfully", jobId);
         } catch (JobNotFoundException | JobAlreadyCanceledException e) {
             logger.error("Error while cancelling job with ID: {}: {}",jobId, e.getMessage());
+            throw e;
         }
     }
 
     @GetMapping(path = "/{jobId}")
+    @ResponseBody
     public ResponseDto<JobResponseDto> getJob(@PathVariable("jobId") String jobIdString) {
         UUID jobId = UUIDValidator.validateUUID(jobIdString);
         Job job = jobService.getJob(jobId);

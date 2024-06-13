@@ -7,6 +7,7 @@ import com.zenjob.challenge.dto.ShiftDto;
 import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.exception.ShiftAlreadyCanceledException;
 import com.zenjob.challenge.exception.ShiftNotFoundException;
+import com.zenjob.challenge.exception.ShiftsForTalentNotFoundException;
 import com.zenjob.challenge.service.JobService;
 import com.zenjob.challenge.service.ShiftService;
 import com.zenjob.challenge.util.UUIDValidator;
@@ -41,6 +42,7 @@ public class ShiftController {
     public ResponseDto<ShiftsResponseDto> getShifts(@PathVariable("jobId") String jobIdString) {
         UUID jobId = UUIDValidator.validateUUID(jobIdString);
         logger.info("Request to retrieve shifts for job with ID: {}", jobId);
+        System.out.println("This is get shifts!");
 
         //Ensuring that the job exists
         jobService.getJob(jobId);
@@ -76,15 +78,16 @@ public class ShiftController {
         }
     }
 
-    @PatchMapping(path = "/talent/{talendId}")
+    @PatchMapping(path = "/talent/{talentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancelShiftsForTalent(@PathVariable("talendId") String talentIdString) {
+    public void cancelShiftsForTalent(@PathVariable("talentId") String talentIdString) {
         UUID talentId = UUIDValidator.validateUUID(talentIdString);
+        System.out.printf("TAlenid: %s\n", talentId);
         logger.info("Request to cancel shift for talent with ID: {}", talentId);
         try {
             shiftService.cancelShiftForTalent(talentId);
             logger.info("Successfully cancelled shift for talent with ID: {}", talentId);
-        }catch(ShiftAlreadyCanceledException | ShiftNotFoundException e){
+        }catch(ShiftAlreadyCanceledException | ShiftNotFoundException | ShiftsForTalentNotFoundException e){
             logger.info("Error cancelling shifts for talent: {}", e.getMessage());
             throw e;
         }
@@ -92,13 +95,14 @@ public class ShiftController {
 
     @PatchMapping(path = "/{shiftId}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void cancelShift(@PathVariable("shiftId") String shiftIdString){
+    public void cancelShift(@PathVariable("shiftId") String shiftIdString) {
         UUID shiftId = UUIDValidator.validateUUID(shiftIdString);
         logger.info("Request to cancel shift with ID: {}", shiftId);
         try {
             shiftService.cancelShift(shiftId);
         }catch(ShiftAlreadyCanceledException | ShiftNotFoundException e){
             logger.info("Error cancelling shift: {}", e.getMessage());
+            throw e;
         }
     }
 

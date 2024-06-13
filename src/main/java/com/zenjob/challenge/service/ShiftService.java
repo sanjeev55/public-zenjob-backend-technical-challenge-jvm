@@ -2,6 +2,7 @@ package com.zenjob.challenge.service;
 
 import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.entity.Shift;
+import com.zenjob.challenge.enums.JobStatusEnum;
 import com.zenjob.challenge.enums.ShiftStatusEnum;
 import com.zenjob.challenge.exception.*;
 import com.zenjob.challenge.repository.ShiftRepository;
@@ -94,11 +95,17 @@ public class ShiftService {
 
     }
 
-
+    /**
+     * Check if a shift is the last available shift of a job.
+     * Also checks if Job was canceled or not.
+     *
+     * @param shiftId The ID of the shift to be canceled.
+     * @param job job in which the shift belongs to.
+     */
     private void checkIfLastAvailableShift(UUID shiftId, Job job) {
         long numberOfAvailableShift =  shiftRepository.findAllByJobId(job.getId()).stream().
                 filter(shift -> !shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED)).count();
-        if(numberOfAvailableShift == 1) {
+        if(!job.getJobStatus().equals(JobStatusEnum.CANCELED) && numberOfAvailableShift == 1) {
             throw new LastShiftExeption(shiftId, job.getId());
         }
     }

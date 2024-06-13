@@ -4,6 +4,7 @@ import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.entity.Shift;
 import com.zenjob.challenge.enums.JobStatusEnum;
 import com.zenjob.challenge.enums.ShiftStatusEnum;
+import com.zenjob.challenge.exception.JobAlreadyCanceledException;
 import com.zenjob.challenge.exception.JobNotFoundException;
 import com.zenjob.challenge.repository.JobRepository;
 import com.zenjob.challenge.repository.ShiftRepository;
@@ -24,13 +25,10 @@ import java.util.stream.LongStream;
 @RequiredArgsConstructor
 @Service
 public class JobService {
-    @Autowired
     private final JobRepository   jobRepository;
-
-    @Autowired
     private final ShiftRepository shiftRepository;
-    @Autowired
-    private ShiftService shiftService;
+    private final ShiftService shiftService;
+
 
     @Transactional
     public Job createJob(LocalDate start, LocalDate end) {
@@ -94,7 +92,7 @@ public class JobService {
                     .filter(shift -> !shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED))
                     .forEach(shift -> shiftService.cancelShift(shift.getId()));
         }else{
-            throw new JobNotFoundException(jobId);
+            throw new JobAlreadyCanceledException(jobId);
         }
 
     }
