@@ -4,32 +4,26 @@ import com.zenjob.challenge.dto.BookTalentRequestDto;
 import com.zenjob.challenge.dto.ShiftsResponseDto;
 import com.zenjob.challenge.dto.ResponseDto;
 import com.zenjob.challenge.dto.ShiftDto;
-import com.zenjob.challenge.entity.Job;
-import com.zenjob.challenge.exception.ShiftAlreadyCanceledException;
 import com.zenjob.challenge.exception.ShiftNotFoundException;
 import com.zenjob.challenge.exception.ShiftsForTalentNotFoundException;
 import com.zenjob.challenge.service.JobService;
 import com.zenjob.challenge.service.ShiftService;
 import com.zenjob.challenge.util.UUIDValidator;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
-@RequestMapping(path = "/shift")
+@RequestMapping(path = "/v1/shift")
 @RequiredArgsConstructor
 public class ShiftController {
     private final ShiftService shiftService;
-    private final JobService jobService;
-
-    private static final Logger logger = LoggerFactory.getLogger(ShiftController.class);
 
     /**
      * Retrieves shifts for a specific job.
@@ -39,69 +33,57 @@ public class ShiftController {
      */
     @GetMapping(path = "/{jobId}")
     @ResponseBody
-    public ResponseDto<ShiftsResponseDto> getShifts(@PathVariable("jobId") String jobIdString) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<ShiftsResponseDto> fetchByJobId(@PathVariable("jobId") String jobIdString) {
         UUID jobId = UUIDValidator.validateUUID(jobIdString);
-        logger.info("Request to retrieve shifts for job with ID: {}", jobId);
-        System.out.println("This is get shifts!");
 
-        //Ensuring that the job exists
-        jobService.getJob(jobId);
+        log.info("Request to retrieve shifts for job with ID: {}", jobId);
 
-        List<ShiftDto> shiftResponses = shiftService.getShiftsByJobId(jobId).stream()
-                .map(shift -> ShiftDto.builder()
-                        .id(shift.getId())
-                        .talentId(shift.getTalentId())
-                        .jobId(shift.getJob().getId())
-                        .start(shift.getStartTime())
-                        .end(shift.getEndTime())
-                        .status(shift.getShiftStatus())
-                        .build())
-                .collect(Collectors.toList());
+        List<ShiftDto> shifts = shiftService.fetchByJobId(jobId);
 
         return ResponseDto.<ShiftsResponseDto>builder()
                 .data(ShiftsResponseDto.builder()
-                        .shifts(shiftResponses)
+                        .shifts(shifts)
                         .build())
                 .build();
     }
 
     @PutMapping(path = "/book/{shiftId}")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void bookTalent(@PathVariable("shiftId") String shiftIdString, @RequestBody @Valid BookTalentRequestDto dto) {
+    @ResponseStatus(code = HttpStatus.ACCEPTED)
+    public void book(@PathVariable("shiftId") String shiftIdString, @RequestBody @Valid BookTalentRequestDto bookTalentRequestDto) {
         UUID shiftId = UUIDValidator.validateUUID(shiftIdString);
-        logger.info("Request to book talent with ID: {} for shift with ID: {}", dto.getTalent(), shiftId);
+        log.info("Request to book talent with ID: {} for shift with ID: {}", bookTalentRequestDto.getTalent(), shiftId);
         try {
-            shiftService.bookTalent(shiftId, dto.getTalent());
-        }catch(ShiftAlreadyCanceledException | ShiftNotFoundException e){
-            logger.info("Error booking shift: {}", e.getMessage());
+            shiftService.book(shiftId, bookTalentRequestDto.getTalent());
+        }catch(ShiftNotFoundException e){
+            log.info("Error booking shift: {}", e.getMessage());
             throw e;
         }
     }
 
     @PutMapping(path = "/talent/{talentId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancelShiftsForTalent(@PathVariable("talentId") String talentIdString) {
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void cancelForTalent(@PathVariable("talentId") String talentIdString) {
         UUID talentId = UUIDValidator.validateUUID(talentIdString);
-        System.out.printf("TAlenid: %s\n", talentId);
-        logger.info("Request to cancel shift for talent with ID: {}", talentId);
+        log.info("Request to cancel shift for talent with ID: {}", talentId);
         try {
             shiftService.cancelShiftForTalent(talentId);
-            logger.info("Successfully cancelled shift for talent with ID: {}", talentId);
-        }catch(ShiftAlreadyCanceledException | ShiftNotFoundException | ShiftsForTalentNotFoundException e){
-            logger.info("Error cancelling shifts for talent: {}", e.getMessage());
+            log.info("Successfully cancelled shift for talent with ID: {}", talentId);
+        }catch(ShiftNotFoundException | ShiftsForTalentNotFoundException e){
+            log.info("Error cancelling shifts for talent: {}", e.getMessage());
             throw e;
         }
     }
 
-    @PutMapping(path = "/{shiftId}")
-    @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void cancelShift(@PathVariable("shiftId") String shiftIdString) {
+    @PutMapping(path = "cancel/{shiftId}")
+    @ResponseStatus(code = HttpStatus.ACCEPTED)
+    public void cancel(@PathVariable("shiftId") String shiftIdString) {
         UUID shiftId = UUIDValidator.validateUUID(shiftIdString);
-        logger.info("Request to cancel shift with ID: {}", shiftId);
+        log.info("Request to cancel shift with ID: {}", shiftId);
         try {
-            shiftService.cancelShift(shiftId);
-        }catch(ShiftAlreadyCanceledException | ShiftNotFoundException e){
-            logger.info("Error cancelling shift: {}", e.getMessage());
+            shiftService.cancel(shiftId);
+        }catch(ShiftNotFoundException e){
+            log.info("Error cancelling shift: {}", e.getMessage());
             throw e;
         }
     }

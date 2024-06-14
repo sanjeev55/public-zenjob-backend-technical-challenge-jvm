@@ -1,6 +1,5 @@
 package com.zenjob.challenge.entity;
 
-import com.zenjob.challenge.enums.JobStatusEnum;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -45,6 +43,12 @@ public class Job {
     @LastModifiedDate
     private Instant updatedAt;
 
-    private JobStatusEnum jobStatus;
+    private Status status;
+
+    public enum Status {
+        CREATED,
+        CANCELED,
+        COMPLETED
+    }
 
 }

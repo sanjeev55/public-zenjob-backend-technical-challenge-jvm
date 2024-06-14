@@ -1,6 +1,5 @@
 package com.zenjob.challenge.entity;
 
-import com.zenjob.challenge.enums.ShiftStatusEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.CreatedDate;
@@ -44,5 +43,12 @@ public class Shift {
     @LastModifiedDate
     private Instant updatedAt;
 
-    private ShiftStatusEnum shiftStatus;
+    private Status status;
+
+    public enum Status{
+        CREATED,
+        BOOKED,
+        CANCELED,
+        COMPLETED
+    }
 }

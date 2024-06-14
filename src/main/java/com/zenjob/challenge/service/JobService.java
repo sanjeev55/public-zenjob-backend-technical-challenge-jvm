@@ -1,23 +1,18 @@
 package com.zenjob.challenge.service;
 
+import com.zenjob.challenge.dto.JobRequestDto;
 import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.entity.Shift;
-import com.zenjob.challenge.enums.JobStatusEnum;
-import com.zenjob.challenge.enums.ShiftStatusEnum;
-import com.zenjob.challenge.exception.JobAlreadyCanceledException;
 import com.zenjob.challenge.exception.JobNotFoundException;
 import com.zenjob.challenge.repository.JobRepository;
 import com.zenjob.challenge.repository.ShiftRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -25,32 +20,36 @@ import java.util.stream.LongStream;
 @RequiredArgsConstructor
 @Service
 public class JobService {
-    private final JobRepository   jobRepository;
-    private final ShiftRepository shiftRepository;
+    private final JobRepository jobRepository;
     private final ShiftService shiftService;
 
-
     @Transactional
-    public Job createJob(LocalDate start, LocalDate end) {
+    public Job create(final JobRequestDto jobRequestDto) {
 
-        validateStartEndDate(start, end);
+        LocalDate startDate = jobRequestDto.getStart();
+        LocalDate endDate = jobRequestDto.getEnd();
+
+        validateStartEndDate(startDate, endDate);
 
         //Creates job entity
         Job job = Job.builder()
                 .companyId(UUID.randomUUID())
-                .startTime(start.atTime(8, 0, 0).toInstant(ZoneOffset.UTC))
-                .endTime(end.atTime(16, 0, 0).toInstant(ZoneOffset.UTC))
-                .jobStatus(JobStatusEnum.CREATED)
+                .startTime(startDate.atTime(8, 0, 0).toInstant(ZoneOffset.UTC))
+                .endTime(endDate.atTime(16, 0, 0).toInstant(ZoneOffset.UTC))
+                .status(Job.Status.CREATED)
                 .build();
 
-        //Creates shifts for each day between start and end dates
-        job.setShifts(LongStream.range(0, ChronoUnit.DAYS.between(start, end))
-                .mapToObj(idx -> start.plus(idx, ChronoUnit.DAYS))
+        //Creates shifts for each day from start to end dates
+        long between = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+        System.out.println("Between days: "+between);
+        job.setShifts(LongStream.range(0, between)
+                .mapToObj(idx -> startDate.plus(idx, ChronoUnit.DAYS))
                 .map(date -> Shift.builder()
                         .job(job)
                         .startTime(date.atTime(8, 0, 0).toInstant(ZoneOffset.UTC))
                         .endTime(date.atTime(16, 0, 0).toInstant(ZoneOffset.UTC))
-                        .shiftStatus(ShiftStatusEnum.CREATED)
+                        .status(Shift.Status.CREATED)
                         .build())
                 .collect(Collectors.toList()));
 
@@ -78,26 +77,22 @@ public class JobService {
      * @param jobId The ID of the job to cancel.
      */
     @Transactional
-    public void cancelJob(UUID jobId){
+    public void cancel(final UUID jobId) {
 
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(()->new JobNotFoundException(jobId));
 
-        if(!job.getJobStatus().equals(JobStatusEnum.CANCELED)){
-            job.setJobStatus(JobStatusEnum.CANCELED);
+        if(!job.getStatus().equals(Job.Status.CANCELED)){
+            job.setStatus(Job.Status.CANCELED);
             jobRepository.save(job);
 
             //Cancels all the shifts associated with the job
-            shiftRepository.findAllByJobId(jobId).stream()
-                    .filter(shift -> !shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED))
-                    .forEach(shift -> shiftService.cancelShift(shift.getId()));
-        }else{
-            throw new JobAlreadyCanceledException(jobId);
+            job.getShifts().forEach(shiftService::cancel);
         }
 
     }
 
-    public Job getJob(UUID jobId){
+    public Job fetch(final UUID jobId){
         return jobRepository.findById(jobId).orElseThrow(()->new JobNotFoundException(jobId));
     }
 

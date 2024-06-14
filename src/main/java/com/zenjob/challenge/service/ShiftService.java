@@ -1,16 +1,14 @@
 package com.zenjob.challenge.service;
 
+import com.zenjob.challenge.dto.ShiftDto;
 import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.entity.Shift;
-import com.zenjob.challenge.enums.JobStatusEnum;
-import com.zenjob.challenge.enums.ShiftStatusEnum;
 import com.zenjob.challenge.exception.*;
 import com.zenjob.challenge.repository.ShiftRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLOutput;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,10 +19,6 @@ public class ShiftService {
 
     private final ShiftRepository shiftRepository;
 
-    public List<Shift> getShiftsByJobId(UUID id) {
-        return shiftRepository.findAllByJobId(id);
-    }
-
     /**
      * Books a talent for a shift if the shift is in the CREATED state.
      *
@@ -32,36 +26,32 @@ public class ShiftService {
      * @param talentId The ID of the talent.
      */
     @Transactional
-    public void bookTalent(UUID shiftId, UUID talentId) {
+    public void book(UUID shiftId, UUID talentId) {
         Shift shift = shiftRepository.findById(shiftId).orElseThrow(()->new ShiftNotFoundException(shiftId));
 
-        if(shift.getShiftStatus().equals(ShiftStatusEnum.CREATED)) {
-            shift.setTalentId(talentId);
-            shift.setShiftStatus(ShiftStatusEnum.BOOKED);
-            shiftRepository.save(shift);
-        }else{
-            throw new ShiftAlreadyBookedException(shiftId);
+        if(!shift.getStatus().equals(Shift.Status.CREATED)){
+            throw new CannotBookShiftException(shiftId);
         }
+
+        shift.setTalentId(talentId);
+        shift.setStatus(Shift.Status.BOOKED);
+        shiftRepository.save(shift);
     }
 
-    /**
-     * Cancels a shift if it is not already canceled.
-     *
-     * @param shiftId The ID of the shift.
-     */
     @Transactional
-    public void cancelShift(UUID shiftId) {
+    public void cancel(UUID shiftId) {
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new ShiftNotFoundException(shiftId));
 
-        checkIfLastAvailableShift(shiftId, shift.getJob());  //checks if it's the only last shift of a job
+        checkIfLastAvailableShift(shift);  //checks if it's the only last shift of a job
+        cancel(shift);
+    }
 
-        if (!shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED)) {
-            shift.setShiftStatus(ShiftStatusEnum.CANCELED);
+    @Transactional
+    public void cancel(Shift shift) {
+        if (!shift.getStatus().equals(Shift.Status.CANCELED)) {
+            shift.setStatus(Shift.Status.CANCELED);
             shiftRepository.save(shift);
-//            shiftRepository.updateShiftStatus(shiftId, ShiftStatusEnum.CANCELED);
-        } else {
-            throw new ShiftAlreadyCanceledException(shiftId);
         }
     }
 
@@ -78,14 +68,14 @@ public class ShiftService {
         }
 
         List<Shift> activeShifts = shifts.stream()
-                .filter(shift -> !shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED))
+                .filter(shift -> !shift.getStatus().equals(Shift.Status.CANCELED))
                 .collect(Collectors.toList());
 
         if (activeShifts.isEmpty()) {
             throw new NoAvailableShiftException(talentId);
         }
         activeShifts.forEach(shift -> {
-                cancelShift(shift.getId());
+                cancel(shift);
                 createReplacementShift(shift);
                 });
     }
@@ -95,7 +85,7 @@ public class ShiftService {
                 .job(canceledShift.getJob())
                 .startTime(canceledShift.getStartTime())
                 .endTime(canceledShift.getEndTime())
-                .shiftStatus(ShiftStatusEnum.CREATED)
+                .status(Shift.Status.CREATED)
                 .build();
 
         shiftRepository.save(replacementShift);
@@ -105,14 +95,30 @@ public class ShiftService {
      * Check if a shift is the last available shift of a job.
      * Also checks if Job was canceled or not.
      *
-     * @param shiftId The ID of the shift to be canceled.
-     * @param job job in which the shift belongs to.
+     * @param currentShift The shift to be canceled.
      */
-    private void checkIfLastAvailableShift(UUID shiftId, Job job) {
-        long numberOfAvailableShift =  shiftRepository.findAllByJobId(job.getId()).stream().
-                filter(shift -> !shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED)).count();
-        if(!job.getJobStatus().equals(JobStatusEnum.CANCELED) && numberOfAvailableShift == 1) {
-            throw new LastShiftExeption(shiftId, job.getId());
+    private void checkIfLastAvailableShift(Shift currentShift) {
+        Job job = currentShift.getJob();
+        long numberOfAvailableShift =  shiftRepository.countAllByJobIdAndStatusNot(job.getId(), Shift.Status.CANCELED);
+        if(!job.getStatus().equals(Job.Status.CANCELED) && numberOfAvailableShift == 1) {
+            throw new LastShiftException(currentShift);
         }
+    }
+
+    public List<ShiftDto> fetchByJobId(final UUID jobId) {
+        List<Shift> shifts = shiftRepository.findAllByJobId(jobId);
+        if(shifts.isEmpty()) {
+            throw new JobNotFoundException(jobId);
+        }
+        return shifts.stream()
+                .map(shift -> ShiftDto.builder()
+                        .id(shift.getId())
+                        .talentId(shift.getTalentId())
+                        .jobId(shift.getJob().getId())
+                        .start(shift.getStartTime())
+                        .end(shift.getEndTime())
+                        .status(shift.getStatus())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

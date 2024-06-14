@@ -1,6 +1,6 @@
 package com.zenjob.challenge.dto;
 
-import com.zenjob.challenge.enums.ShiftStatusEnum;
+import com.zenjob.challenge.entity.Shift;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,5 +21,5 @@ public class ShiftDto {
     @NotNull
     private Instant end;
     @NotNull
-    private ShiftStatusEnum status;
+    private Shift.Status status;
 }
