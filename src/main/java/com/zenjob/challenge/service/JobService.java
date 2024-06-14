@@ -40,10 +40,10 @@ public class JobService {
                 .build();
 
         //Creates shifts for each day from start to end dates
-        long between = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
-        System.out.println("Between days: "+between);
-        job.setShifts(LongStream.range(0, between)
+        System.out.println("Between days: "+totalDays);
+        job.setShifts(LongStream.range(0, totalDays)
                 .mapToObj(idx -> startDate.plus(idx, ChronoUnit.DAYS))
                 .map(date -> Shift.builder()
                         .job(job)
