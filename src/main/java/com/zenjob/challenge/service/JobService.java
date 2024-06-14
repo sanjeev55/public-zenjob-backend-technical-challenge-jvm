@@ -5,7 +5,6 @@ import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.entity.Shift;
 import com.zenjob.challenge.exception.JobNotFoundException;
 import com.zenjob.challenge.repository.JobRepository;
-import com.zenjob.challenge.repository.ShiftRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +41,6 @@ public class JobService {
         //Creates shifts for each day from start to end dates
         long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
-        System.out.println("Between days: "+totalDays);
         job.setShifts(LongStream.range(0, totalDays)
                 .mapToObj(idx -> startDate.plus(idx, ChronoUnit.DAYS))
                 .map(date -> Shift.builder()

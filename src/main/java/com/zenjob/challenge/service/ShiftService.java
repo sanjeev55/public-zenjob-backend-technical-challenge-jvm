@@ -43,7 +43,7 @@ public class ShiftService {
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new ShiftNotFoundException(shiftId));
 
-        checkIfLastAvailableShift(shift);  //checks if it's the only last shift of a job
+        checkIfLastAvailableShift(shift);  //check if the shift is the last available shift of a job
         cancel(shift);
     }
 

@@ -6,7 +6,6 @@ import com.zenjob.challenge.dto.ResponseDto;
 import com.zenjob.challenge.dto.ShiftDto;
 import com.zenjob.challenge.exception.ShiftNotFoundException;
 import com.zenjob.challenge.exception.ShiftsForTalentNotFoundException;
-import com.zenjob.challenge.service.JobService;
 import com.zenjob.challenge.service.ShiftService;
 import com.zenjob.challenge.util.UUIDValidator;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +60,11 @@ public class ShiftController {
         }
     }
 
+    /**
+     * Cancels all the shift of a talent and creates replacement shifts
+     *
+     * @param talentIdString The ID of the Talent.
+     */
     @PutMapping(path = "/talent/{talentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void cancelForTalent(@PathVariable("talentId") String talentIdString) {
