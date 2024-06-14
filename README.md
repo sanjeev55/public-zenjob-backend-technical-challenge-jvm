@@ -27,6 +27,22 @@ You are looking at a simplified backend service for managing job and shift booki
 4. **Cancel Shifts for a Talent**: Companies can cancel all shifts booked for a specific talent and create replacement shifts for the same dates.
 5. **Fetch Job and Shift Information**: Endpoints are provided to fetch details about jobs and their associated shifts.
 
+## How do I run it
+
+
+### Steps to Run
+1. **Clone the Repository**
+   ```sh
+   git clone <repository-url>
+   cd <repository-directory>
+2. **Build Project**
+    ```sh
+   ./gradlew build
+3. **Run Application**
+    ```sh
+   ./gradlew bootRun
+
+
 ## Endpoints
 - **Create Job**: `POST /job`
 - **Cancel Job**: `PUT /job/cancel/{jobId}`
