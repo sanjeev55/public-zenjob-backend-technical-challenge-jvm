@@ -7,13 +7,13 @@ import com.zenjob.challenge.enums.ShiftStatusEnum;
 import com.zenjob.challenge.exception.*;
 import com.zenjob.challenge.repository.ShiftRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLOutput;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -59,6 +59,7 @@ public class ShiftService {
         if (!shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED)) {
             shift.setShiftStatus(ShiftStatusEnum.CANCELED);
             shiftRepository.save(shift);
+//            shiftRepository.updateShiftStatus(shiftId, ShiftStatusEnum.CANCELED);
         } else {
             throw new ShiftAlreadyCanceledException(shiftId);
         }
@@ -75,9 +76,15 @@ public class ShiftService {
         if(shifts.isEmpty()) {
             throw new ShiftsForTalentNotFoundException(talentId);
         }
-        shifts.stream()
+
+        List<Shift> activeShifts = shifts.stream()
                 .filter(shift -> !shift.getShiftStatus().equals(ShiftStatusEnum.CANCELED))
-                .forEach(shift -> {
+                .collect(Collectors.toList());
+
+        if (activeShifts.isEmpty()) {
+            throw new NoAvailableShiftException(talentId);
+        }
+        activeShifts.forEach(shift -> {
                 cancelShift(shift.getId());
                 createReplacementShift(shift);
                 });
@@ -92,7 +99,6 @@ public class ShiftService {
                 .build();
 
         shiftRepository.save(replacementShift);
-
     }
 
     /**

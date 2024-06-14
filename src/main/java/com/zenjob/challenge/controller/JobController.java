@@ -46,7 +46,7 @@ public class JobController {
                 .build();
     }
 
-    @PatchMapping(path = "/{jobId}")
+    @PutMapping(path = "/{jobId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelJob(@PathVariable("jobId") String jobIdString) {
         UUID jobId = UUIDValidator.validateUUID(jobIdString);

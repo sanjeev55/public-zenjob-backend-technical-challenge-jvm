@@ -65,7 +65,7 @@ public class ShiftController {
                 .build();
     }
 
-    @PatchMapping(path = "/book/{shiftId}")
+    @PutMapping(path = "/book/{shiftId}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void bookTalent(@PathVariable("shiftId") String shiftIdString, @RequestBody @Valid BookTalentRequestDto dto) {
         UUID shiftId = UUIDValidator.validateUUID(shiftIdString);
@@ -78,7 +78,7 @@ public class ShiftController {
         }
     }
 
-    @PatchMapping(path = "/talent/{talentId}")
+    @PutMapping(path = "/talent/{talentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelShiftsForTalent(@PathVariable("talentId") String talentIdString) {
         UUID talentId = UUIDValidator.validateUUID(talentIdString);
@@ -93,7 +93,7 @@ public class ShiftController {
         }
     }
 
-    @PatchMapping(path = "/{shiftId}")
+    @PutMapping(path = "/{shiftId}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void cancelShift(@PathVariable("shiftId") String shiftIdString) {
         UUID shiftId = UUIDValidator.validateUUID(shiftIdString);
