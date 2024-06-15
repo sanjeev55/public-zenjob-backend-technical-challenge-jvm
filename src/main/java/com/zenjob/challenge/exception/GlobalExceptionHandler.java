@@ -6,8 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import javax.persistence.ElementCollection;
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
