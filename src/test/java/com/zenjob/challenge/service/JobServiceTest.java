@@ -205,8 +205,4 @@ public class JobServiceTest {
         verify(jobRepository, times(1)).findById(jobId);
     }
 
-
-
-
-
 }
