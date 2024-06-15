@@ -2,17 +2,13 @@ package com.zenjob.challenge.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zenjob.challenge.dto.BookTalentRequestDto;
-import com.zenjob.challenge.dto.ResponseDto;
 import com.zenjob.challenge.dto.ShiftDto;
-import com.zenjob.challenge.dto.ShiftsResponseDto;
 import com.zenjob.challenge.entity.Shift;
 import com.zenjob.challenge.exception.JobNotFoundException;
 import com.zenjob.challenge.exception.ShiftNotFoundException;
 import com.zenjob.challenge.exception.ShiftsForTalentNotFoundException;
 import com.zenjob.challenge.service.ShiftService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;

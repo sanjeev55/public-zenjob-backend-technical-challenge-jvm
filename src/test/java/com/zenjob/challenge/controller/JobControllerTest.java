@@ -2,16 +2,10 @@ package com.zenjob.challenge.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zenjob.challenge.dto.JobRequestDto;
-import com.zenjob.challenge.dto.JobResponseDto;
-import com.zenjob.challenge.dto.ResponseDto;
 import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.exception.JobNotFoundException;
 import com.zenjob.challenge.service.JobService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;

@@ -44,6 +44,7 @@ You are looking at a simplified backend service for managing job and shift booki
 
 
 ## Endpoints
+- **Swagger Api Documentation**: `GET /swagger-ui/`
 - **Create Job**: `POST /job`
 - **Cancel Job**: `PUT /job/cancel/{jobId}`
 - **Fetch Job**: `GET /job/{jobId}`

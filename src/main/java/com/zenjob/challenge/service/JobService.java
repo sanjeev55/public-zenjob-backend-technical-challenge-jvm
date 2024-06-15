@@ -22,6 +22,11 @@ public class JobService {
     private final JobRepository jobRepository;
     private final ShiftService shiftService;
 
+    /**
+     * Creates a new Job and its subsequent shifts
+     * @param jobRequestDto Dto with job ID and start and end date
+     * @return created Job object
+     */
     @Transactional
     public Job create(final JobRequestDto jobRequestDto) {
 

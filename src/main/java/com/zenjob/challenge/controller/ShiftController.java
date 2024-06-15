@@ -8,6 +8,8 @@ import com.zenjob.challenge.exception.ShiftNotFoundException;
 import com.zenjob.challenge.exception.ShiftsForTalentNotFoundException;
 import com.zenjob.challenge.service.ShiftService;
 import com.zenjob.challenge.util.UUIDValidator;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
+@Api(tags = "Shift Management")
 @Slf4j
 @RestController
 @RequestMapping(path = "/v1/shift")
@@ -24,12 +27,7 @@ import java.util.UUID;
 public class ShiftController {
     private final ShiftService shiftService;
 
-    /**
-     * Retrieves shifts for a specific job.
-     *
-     * @param jobIdString The ID of the job in string form.
-     * @return A response containing the shifts.
-     */
+    @ApiOperation(value = "Fetch Shift by JobId", notes = "Fetches all the shifts with specified JobId")
     @GetMapping(path = "/{jobId}")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
@@ -47,6 +45,7 @@ public class ShiftController {
                 .build();
     }
 
+    @ApiOperation(value = "Book a talent for a shift", notes = "Books a talent for the specified shift ID.")
     @PutMapping(path = "/book/{shiftId}")
     @ResponseStatus(code = HttpStatus.ACCEPTED)
     public void book(@PathVariable("shiftId") String shiftIdString, @RequestBody @Valid BookTalentRequestDto bookTalentRequestDto) {
@@ -60,11 +59,8 @@ public class ShiftController {
         }
     }
 
-    /**
-     * Cancels all the shift of a talent and creates replacement shifts
-     *
-     * @param talentIdString The ID of the Talent.
-     */
+
+    @ApiOperation(value = "Cancel shifts for a talent", notes = "Cancels all shifts booked for the specified talent ID.")
     @PutMapping(path = "/talent/{talentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void cancelForTalent(@PathVariable("talentId") String talentIdString) {
@@ -79,6 +75,7 @@ public class ShiftController {
         }
     }
 
+    @ApiOperation(value = "Cancel a shift", notes = "Cancels the shift with the specified ID.")
     @PutMapping(path = "cancel/{shiftId}")
     @ResponseStatus(code = HttpStatus.ACCEPTED)
     public void cancel(@PathVariable("shiftId") String shiftIdString) {

@@ -7,6 +7,8 @@ import com.zenjob.challenge.entity.Job;
 import com.zenjob.challenge.exception.JobNotFoundException;
 import com.zenjob.challenge.service.JobService;
 import com.zenjob.challenge.util.UUIDValidator;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.UUID;
 
+@Api(tags = "Job management")
 @Slf4j
 @RestController
 @RequestMapping(path = "/v1/job")
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class JobController {
     private final JobService jobService;
 
+    @ApiOperation(value = "Create new Job with shifts", notes = "Creates a new job with the specified start and end dates and generates shifts.")
     @PostMapping
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
@@ -36,6 +40,7 @@ public class JobController {
                 .build();
     }
 
+    @ApiOperation(value = "Cancel a Job", notes = "Cancels the job with the specified ID and updates the status of its shifts.")
     @PutMapping(path = "cancel/{jobId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void cancel(@PathVariable("jobId") String jobIdString) {
@@ -49,6 +54,7 @@ public class JobController {
         }
     }
 
+    @ApiOperation(value = "Fetch a Job", notes = "Fetches the job with the specified ID.")
     @GetMapping(path = "/{jobId}")
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
